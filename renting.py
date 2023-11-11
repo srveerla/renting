@@ -1,30 +1,35 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
 from flask_pymongo import PyMongo
 
 app = Flask(__name__)
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/rentings_db'
+app.config["MONGO_URI"] = "mongodb://mongo:27017/library"
 mongo = PyMongo(app)
+
+class Renting:
+    def __init__(self, user_id, book_id):
+        self.user_id = user_id
+        self.book_id = book_id
 
 @app.route('/rentings', methods=['GET'])
 def get_rentings():
-    rentings = list(mongo.db.rentings.find())
-    return jsonify({"rentings": rentings})
+    rentings = list(mongo.db.rentings.find({}, {'_id': 0}))
+    return jsonify(rentings)
 
-@app.route('/rentings', methods=['POST'])
-def create_renting():
+@app.route('/rent', methods=['POST'])
+def rent_book():
     data = request.get_json()
+    user_id = data['user_id']
+    book_id = data['book_id']
 
-    # Assuming the data structure, adjust as needed
-    renting_record = {
-        "userId": data.get("userId"),
-        "bookId": data.get("bookId"),
-        "startDate": data.get("startDate"),
-        "endDate": data.get("endDate"),
-    }
+    # Check if the book is already rented
+    existing_renting = mongo.db.rentings.find_one({'book_id': book_id})
+    if existing_renting:
+        return 'Book is already rented', 400
 
-    mongo.db.rentings.insert_one(renting_record)
-
-    return jsonify({"renting": renting_record}), 201
+    # If not rented, proceed with renting
+    renting = Renting(user_id, book_id)
+    mongo.db.rentings.insert_one(renting.__dict__)
+    return 'Book rented', 201
 
 if __name__ == '__main__':
-    app.run(port=5002)
+    app.run(host='0.0.0.0')
