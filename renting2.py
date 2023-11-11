@@ -43,3 +43,17 @@ def get_user_rentals(user_id):
 
 # Get the status of a rental
 @app.route("/rentals/<rental_id>/status", methods=["GET"])
+def get_rental_status(rental_id):
+    if rental_id not in rentals:
+        return jsonify({
+            "success": False,
+            "message": "Rental does not exist."
+        })
+
+    return jsonify({
+        "success": True,
+        "status": rentals[rental_id]["status"]
+    })
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0",debug=True)
