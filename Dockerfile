@@ -4,8 +4,8 @@ WORKDIR /app
 
 COPY . /app
 
-RUN pip install --trusted-host pypi.python.org Flask Flask-PyMongo
+RUN pip install --trusted-host pypi.python.org Flask pyMongo
 
 EXPOSE 5002
 
-CMD ["python", "app.py"]
+CMD ["python", "app/renting.py"]
